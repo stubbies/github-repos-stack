@@ -1,0 +1,10 @@
+{
+  "editor.tabSize": 2,
+  "editor.useTabStops": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "typescript.preferences.quoteStyle": "single",
+  "javascript.format.semicolons": "insert",
+  "typescript.format.semicolons": "insert",
+}
