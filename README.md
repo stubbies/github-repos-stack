@@ -2,11 +2,15 @@
 
 List github repositories by stack with infinite pagination.
 
+![](/preview.png)
+
+
 Using:
 - Vite
 - React
 - Emotion-css
 - Jest
+- React Query
 
 ## Dev
 
