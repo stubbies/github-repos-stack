@@ -11,10 +11,6 @@ import { QueryStatus } from '../common/types';
 
 const queryFilters = [
   {
-    label: 'React',
-    value: 'react',
-  },
-  {
     label: 'Node',
     value: 'node',
   },
@@ -25,6 +21,10 @@ const queryFilters = [
   {
     label: 'Typescript',
     value: 'typescript',
+  },
+  {
+    label: 'React',
+    value: 'react',
   },
   {
     label: 'Fastify',
