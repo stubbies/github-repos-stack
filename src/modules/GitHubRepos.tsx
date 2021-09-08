@@ -6,7 +6,7 @@ import { Card, CardSkeleton } from '../components/card';
 import { ForkIcon, StarIcon } from '../components/icon';
 import List from '../components/list';
 import Stat from '../components/stat';
-import { useSearch } from '../hooks/useSearch2';
+import { useSearch } from '../hooks/useSearch';
 import { QueryStatus } from '../common/types';
 
 const queryFilters = [

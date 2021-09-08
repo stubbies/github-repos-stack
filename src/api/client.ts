@@ -1,4 +1,6 @@
-import { createClient } from 'urql';
+import { GraphQLClient } from 'graphql-request';
+
+const apiUrl = 'https://api.github.com/graphql';
 
 if (!import.meta.env.VITE_GITHUB_TOKEN) {
   throw new Error(
@@ -6,12 +8,9 @@ if (!import.meta.env.VITE_GITHUB_TOKEN) {
   );
 }
 
-const client = createClient({
-  url: 'https://api.github.com/graphql',
-  fetchOptions: {
-    headers: {
-      Authorization: `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
-    },
+const client = new GraphQLClient(apiUrl, {
+  headers: {
+    authorization: `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
   },
 });
 
