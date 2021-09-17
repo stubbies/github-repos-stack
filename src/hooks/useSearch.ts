@@ -1,10 +1,9 @@
+import { gql, useQuery } from '@apollo/client';
 import { Repository } from '@octokit/graphql-schema';
-import { useInfiniteQuery } from 'react-query';
-import client from '../api/client';
 
 type SearchQueryVariables = {
   query: string;
-  after?: string;
+  after?: string | null;
   first: number;
 };
 
@@ -21,13 +20,7 @@ interface SearchQueryResponse {
   };
 }
 
-interface SearchResponse {
-  repositories: Repository[];
-  pageInfo: PageInfo;
-  repositoryCount: number;
-}
-
-const searchQuery = `
+const SEARCH_QUERY = gql(`
   query Search($query: String!, $first: Int, $after: String) {
     search(query: $query, type: REPOSITORY, first: $first, after: $after) {
       repositoryCount
@@ -58,30 +51,11 @@ const searchQuery = `
       }
     }
   }
-`;
-
-const fetchRepositories = async (variables: SearchQueryVariables) =>
-  client.request<SearchQueryResponse>(searchQuery, variables).then(
-    (res): SearchResponse => ({
-      repositories: res.search.edges.map((e) => e.node),
-      pageInfo: res.search.pageInfo,
-      repositoryCount: res.search.repositoryCount,
-    })
-  );
+`);
 
 export function useSearch(variables: SearchQueryVariables) {
-  return useInfiniteQuery<SearchResponse, Error>(
-    `repositories_${variables.query}`,
-    ({ pageParam = null }) =>
-      fetchRepositories({
-        ...variables,
-        after: pageParam,
-        query: `${variables.query} sort:stars`,
-      }),
-    {
-      getNextPageParam: (lastPage) => lastPage.pageInfo.endCursor,
-      // getFetchMore: (lastGroup, allGroups) => lastGroup.nextPage,
-      refetchOnWindowFocus: false,
-    }
-  );
+  return useQuery<SearchQueryResponse, SearchQueryVariables>(SEARCH_QUERY, {
+    variables,
+    notifyOnNetworkStatusChange: true,
+  });
 }

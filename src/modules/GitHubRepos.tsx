@@ -1,13 +1,13 @@
 /** @jsx jsx */
 import { jsx, css } from '@emotion/react';
 import React, { useState } from 'react';
+import { NetworkStatus } from '@apollo/client';
 import Button from '../components/button';
 import { Card, CardSkeleton } from '../components/card';
 import { ForkIcon, StarIcon } from '../components/icon';
 import List from '../components/list';
 import Stat from '../components/stat';
 import { useSearch } from '../hooks/useSearch';
-import { QueryStatus } from '../common/types';
 
 const queryFilters = [
   {
@@ -57,19 +57,69 @@ const styles = {
   }),
 };
 
-const GitHubRepos = () => {
+const pageNum = 9;
+
+const Repositories = React.memo(
+  ({ query }: { query: string }) => {
+    const { data, loading, fetchMore, error, networkStatus } = useSearch({
+      query,
+      first: pageNum,
+      after: null,
+    });
+    const pageInfo = data?.search.pageInfo;
+    return (
+      <React.Fragment>
+        <div css={styles.repos}>
+          {loading && networkStatus !== NetworkStatus.fetchMore ? (
+            <LoadingView items={6} />
+          ) : error ? (
+            `Error! ${error}`
+          ) : data ? (
+            data.search.edges.map(({ node: repo }) => (
+              <Card
+                key={repo.id}
+                meta={[
+                  <Stat
+                    key={'forks'}
+                    value={repo.forks.totalCount}
+                    icon={<ForkIcon size={16} />}
+                  />,
+                  <Stat
+                    key={'stars'}
+                    value={repo.stargazers.totalCount}
+                    icon={<StarIcon size={16} />}
+                  />,
+                ]}
+                title={repo.name}
+                subTitle={repo.owner.login}
+                thumbnail={repo.owner.avatarUrl}
+                description={repo.description as string}
+                url={repo.url}
+              />
+            ))
+          ) : null}
+        </div>
+        {pageInfo?.hasNextPage && (
+          <Button
+            label="Load more"
+            isLoading={networkStatus === NetworkStatus.fetchMore}
+            onChange={() =>
+              fetchMore({
+                variables: {
+                  after: pageInfo.endCursor,
+                },
+              })
+            }
+          />
+        )}
+      </React.Fragment>
+    );
+  },
+  (p, n) => p.query === n.query
+);
+
+const GitHubRepos = React.memo(() => {
   const [query, setQuery] = useState(queryFilters[0].value);
-  const {
-    data,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-  } = useSearch({
-    query,
-    first: 9,
-  });
   return (
     <div css={styles.wrapper}>
       <div css={styles.container}>
@@ -79,60 +129,19 @@ const GitHubRepos = () => {
             items={queryFilters}
             selected={query}
           />
-
-          <div css={styles.repos}>
-            {status === QueryStatus.loading ? (
-              <React.Fragment>
-                <CardSkeleton />
-                <CardSkeleton />
-                <CardSkeleton />
-                <CardSkeleton />
-                <CardSkeleton />
-                <CardSkeleton />
-              </React.Fragment>
-            ) : status === QueryStatus.error ? (
-              <div>Oops...{error?.message}</div>
-            ) : data ? (
-              data.pages.map((group, i) => (
-                <React.Fragment key={i}>
-                  {group.repositories.map((repo) => (
-                    <Card
-                      key={repo.id}
-                      meta={[
-                        <Stat
-                          key={'forks'}
-                          value={repo.forks.totalCount}
-                          icon={<ForkIcon size={16} />}
-                        />,
-                        <Stat
-                          key={'stars'}
-                          value={repo.stargazers.totalCount}
-                          icon={<StarIcon size={16} />}
-                        />,
-                      ]}
-                      title={repo.name}
-                      subTitle={repo.owner.login}
-                      thumbnail={repo.owner.avatarUrl}
-                      description={repo.description as string}
-                      url={repo.url}
-                    />
-                  ))}
-                </React.Fragment>
-              ))
-            ) : null}
-          </div>
-
-          {data && hasNextPage ? (
-            <Button
-              label="Load more"
-              isLoading={isFetchingNextPage}
-              onChange={() => fetchNextPage()}
-            />
-          ) : null}
+          <Repositories query={query} />
         </div>
       </div>
     </div>
   );
-};
+});
+
+const LoadingView = React.memo(({ items }: { items: number }) => (
+  <React.Fragment>
+    {Array.from(Array(items).keys()).map((i) => (
+      <CardSkeleton key={`skel_${i}`} />
+    ))}
+  </React.Fragment>
+));
 
 export default GitHubRepos;

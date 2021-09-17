@@ -1,25 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { QueryClientProvider, QueryClient } from 'react-query';
+import { ApolloProvider } from '@apollo/client';
 import { Global, css } from '@emotion/react';
 import emotionReset from 'emotion-reset';
 import GitHubRepos from './modules/GitHubRepos';
 import { globalStyles } from './common/styles';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      retry: false,
-      staleTime: 1000 * 60 * 60,
-    },
-  },
-});
+import client from './api/client';
 
 ReactDOM.render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
+    <ApolloProvider client={client}>
       <Global
         styles={css`
           ${emotionReset}
@@ -27,7 +17,7 @@ ReactDOM.render(
         `}
       />
       <GitHubRepos />
-    </QueryClientProvider>
+    </ApolloProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );
