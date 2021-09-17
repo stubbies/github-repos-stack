@@ -2,6 +2,8 @@
 
 List github repositories by stack with infinite pagination.
 
+[Demo](https://stub-grs.vercel.app)
+
 ![](/preview.png)
 
 
